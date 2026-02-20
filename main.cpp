@@ -29,10 +29,16 @@ int main() {
 
 	string user_measurement_selection;
 	getline(cin, user_measurement_selection);
-	cout << "You entered: " << user_measurement_selection << endl;
+	cout << "You selected: " << user_measurement_selection << endl;
 
 	//MVP Task 2
+	cout << endl;
+	cout << "Please select:" << endl;
+	cout << "[M]etric or [I]mperial" << endl;
 
+	string user_unit_type_selection;
+	getline(cin, user_unit_type_selection);
+	cout << "You selected: " << user_unit_type_selection << endl;
 
 	return 0;
 }
