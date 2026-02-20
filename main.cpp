@@ -43,7 +43,7 @@ int main() {
 	cout << "You selected: " << user_unit_type_selection << endl;
 
 	//MVP Task 3
-	cout << setprecision(16); //Using this without "fixed" shows user-entered decimal places; Even NASA uses no more than 16 decimal places so this should be plenty accurate
+	cout << setprecision(16); //Using this without "fixed" shows only relevant user-entered decimal places; Even NASA uses no more than 16 decimal places so this should be plenty accurate
 	cout << endl;
 	cout << "Enter the NUMERICAL value to be converted: ";
 	getline(cin, temp);
