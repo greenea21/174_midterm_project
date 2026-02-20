@@ -2,6 +2,8 @@
 #include <string>
 #include <iomanip>
 
+using namespace std;
+
 //-------------------//
 /*
 
@@ -18,6 +20,18 @@ Mass:
 //-------------------//
 
 int main() {
+	//MVP Task 1
+	cout << "Please select the type of measurement you wish to convert" << endl;
+	cout << "(Type the associated letter and hit enter)" << endl;
+	cout << endl;
+	cout << "Options:" << endl;
+	cout << "[D]istance, [T]emperature, or [M]ass" << endl;
+
+	string user_measurement_selection;
+	getline(cin, user_measurement_selection);
+	cout << "You entered: " << user_measurement_selection << endl;
+
+	//MVP Task 2
 
 
 	return 0;
