@@ -14,6 +14,10 @@ double toF(double celsius);
 double toC(double fahrenheit);
 double topounds(double grams);
 double tograms(double pounds);
+bool check_double_overflow(double input);
+bool check_double_underflow(double input);
+bool check_double_wraparound(double input);
+void catch_double_wraparound(double input);
 
 enum measurement_category {
 	DISTANCE = 0,
@@ -26,15 +30,11 @@ enum unit_type {
 	IMPERIAL = 1
 };
 
-string measurement_categories[] = {
-	"DISTANCE",
-	"TEMPERATURE",
-	"MASS"
-};
-
-string unit_types[] = {
-	"METERS",
-	"FEET"
+enum error_type {
+	INVALID_INPUT = -1,
+	O_FLOW = -2,
+	U_FLOW = -3,
+	WRAPAROUND = -4
 };
 
 int main() {
@@ -48,9 +48,9 @@ int main() {
 	cout << "[D]istance, [T]emperature, or [M]ass" << endl;
 
 	getline(cin, temp);
-	char input = tolower(temp[0]);
+	char input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word WILL still work
 
-	unsigned short selected_measurement_type{}; //have to set this to zero with '{}' so intellisense doesn't complain, despite the fact it doesn't need to be
+	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "var = 0" would
 	switch (input) {
 		case 'd':
 			selected_measurement_type = DISTANCE;
@@ -62,7 +62,7 @@ int main() {
 			selected_measurement_type = MASS;
 			break;
 		default:
-			graceful_exit("Invalid input, enter a valid option! (d, t, or m)", -1);
+			graceful_exit("Invalid input, enter a valid option! (d, t, or m)", INVALID_INPUT);
 	}
 
 	//MVP Task 2
@@ -82,33 +82,55 @@ int main() {
 			selected_unit_type = IMPERIAL;
 			break;
 		default:
-			graceful_exit("Invalid input, enter a valid option! (m or i)", -1);
+			graceful_exit("Invalid input, enter a valid option! (m or i)", INVALID_INPUT);
 	}
 
 	//MVP Task 3
 	newline(1);
 	cout << "Enter the NUMERICAL value to be converted: ";
 	getline(cin, temp);
-	double user_value = stod(temp); //TODO if not numerical value then exit
+	double user_value = stod(temp); //stod already detects wraparound and non-numerical values, but does not handle/catch them.
+									//The max/min size of a double is astronomically high though (1 followed by 309 zeros) and is unlikely to be reached.
 
 	newline(1);
 
-	if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) {
-		cout << user_value << "meters is " << tofeet(user_value) << " feet" << endl;
+	//The main "algorithm"
+	if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) { //METERS to FEET
+		if (user_value < 0) {
+			graceful_exit("Distance must be non-negative!", INVALID_INPUT);
+		}
+		//catch_double_wraparound(tofeet(user_value)); //Again, this will never do anything because stod would've ended the program already
+		cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
 	}
-	else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) {
-		cout << user_value << "feet is " << tometers(user_value) << " meters" << endl;
+	else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) { //FEET to METERS
+		if (user_value < 0) {
+			graceful_exit("Distance must be non-negative!", INVALID_INPUT);
+		}
+		cout << user_value << " feet is " << tometers(user_value) << " meter(s)" << endl;
 	}
-	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) {
-		cout << user_value << "celsius is " << toF(user_value) << " fahrenheit" << endl;
+	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) { //CELSIUS to FAHRENHEIT
+		if (user_value < -273.15) {
+			graceful_exit("Value cannot be less than absolute zero! (-273.15C)", INVALID_INPUT);
+		}
+		cout << user_value << " celsius is " << toF(user_value) << " fahrenheit" << endl;
 	}
-	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == IMPERIAL) {
-		cout << user_value << "fahrenheit is " << toC(user_value) << " celsius" << endl;
+	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == IMPERIAL) { //FAHRENHEIT TO CELSIUS
+		if (user_value < toF(-273.15)) {
+			cout << user_value << " " << toF(-273.15) << endl;
+			graceful_exit("Value cannot be less than absolute zero! (-459.67F)", INVALID_INPUT);
+		}
+		cout << user_value << " fahrenheit is " << toC(user_value) << " celsius" << endl;
 	}
-	else if (selected_measurement_type == MASS && selected_unit_type == METRIC) {
-		cout << user_value << "grams is " << topounds(user_value) << " pounds" << endl;
+	else if (selected_measurement_type == MASS && selected_unit_type == METRIC) { //GRAMS to POUNDS
+		if (user_value < 0) {
+			graceful_exit("Mass must be non-negative!", INVALID_INPUT);
+		}
+		cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
 	} else if (selected_measurement_type == MASS && selected_unit_type == IMPERIAL) {
-		cout << user_value << "pounds is " << tograms(user_value) << " grams" << endl;
+		if (user_value < 0) {
+			graceful_exit("Mass must be non-negative!", INVALID_INPUT);
+		}
+		cout << user_value << " pound(s) is " << tograms(user_value) << " gram(s)" << endl; //POUNDS to GRAMS
 	}
 
 	return 0;
@@ -139,7 +161,7 @@ double toF(double celsius) {
 }
 
 double toC(double fahrenheit) {
-	return (fahrenheit - 32) * (5.0 / 9.0);
+	return (fahrenheit - 32.0) * (5.0 / 9.0);
 }
 
 double topounds(double grams) {
@@ -148,4 +170,27 @@ double topounds(double grams) {
 
 double tograms(double pounds) {
 	return pounds * 453.592;
+}
+
+bool check_double_overflow(double input) {
+	if (input > DBL_MAX) { return true; }
+	return false;
+}
+
+bool check_double_underflow(double input) {
+	if (input < DBL_MIN) { return true; }
+	return false;
+}
+
+bool check_double_wraparound(double input) {
+	if (check_double_overflow(input) || check_double_underflow(input)) {
+		return true;
+	}
+	return false;
+}
+
+void catch_double_wraparound(double input) {
+	if (check_double_wraparound(input)) {
+		graceful_exit("Wraparound detected! (overflow / underflow) Please enter a value that's closer to 0", WRAPAROUND);
+	}
 }
