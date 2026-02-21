@@ -14,11 +14,14 @@ double toF(double celsius);
 double toC(double fahrenheit);
 double topounds(double grams);
 double tograms(double pounds);
-bool check_double_overflow(double input);
-bool check_double_underflow(double input);
-bool check_double_wraparound(double input);
-void catch_double_wraparound(double input);
+//bool check_double_overflow(double input);
+//bool check_double_underflow(double input);
+//bool check_double_wraparound(double input);
+//void catch_double_wraparound(double input);
+void validate_input(double value, enum measurement_category category, enum unit_type unit);
 
+//Using enums to avoid "magic numbers" (assigns a keyword to a value so programmers know what the number means)
+//Ex. Can just type DISTANCE instead of 0 for clarity
 enum measurement_category {
 	DISTANCE = 0,
 	TEMPERATURE = 1,
@@ -89,47 +92,34 @@ int main() {
 	newline(1);
 	cout << "Enter the NUMERICAL value to be converted: ";
 	getline(cin, temp);
-	double user_value = stod(temp); //stod already detects wraparound and non-numerical values, but does not handle/catch them.
+	double user_value = stod(temp); //stod already detects wraparound and non-numerical values, but does not handle/catch them (program just crashes).
 									//The max/min size of a double is astronomically high though (1 followed by 309 zeros) and is unlikely to be reached.
+									//Might be able to fix the crashing with the try/catch feature
 
 	newline(1);
 
 	//The main "algorithm"
 	if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) { //METERS to FEET
-		if (user_value < 0) {
-			graceful_exit("Distance must be non-negative!", INVALID_INPUT);
-		}
-		//catch_double_wraparound(tofeet(user_value)); //Again, this will never do anything because stod would've ended the program already
+		validate_input(user_value, DISTANCE, METRIC);
 		cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
 	}
 	else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) { //FEET to METERS
-		if (user_value < 0) {
-			graceful_exit("Distance must be non-negative!", INVALID_INPUT);
-		}
+		validate_input(user_value, DISTANCE, IMPERIAL);
 		cout << user_value << " feet is " << tometers(user_value) << " meter(s)" << endl;
 	}
 	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) { //CELSIUS to FAHRENHEIT
-		if (user_value < -273.15) {
-			graceful_exit("Value cannot be less than absolute zero! (-273.15C)", INVALID_INPUT);
-		}
+		validate_input(user_value, TEMPERATURE, METRIC);
 		cout << user_value << " celsius is " << toF(user_value) << " fahrenheit" << endl;
 	}
 	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == IMPERIAL) { //FAHRENHEIT TO CELSIUS
-		if (user_value < toF(-273.15)) {
-			cout << user_value << " " << toF(-273.15) << endl;
-			graceful_exit("Value cannot be less than absolute zero! (-459.67F)", INVALID_INPUT);
-		}
+		validate_input(user_value, TEMPERATURE, IMPERIAL);
 		cout << user_value << " fahrenheit is " << toC(user_value) << " celsius" << endl;
 	}
 	else if (selected_measurement_type == MASS && selected_unit_type == METRIC) { //GRAMS to POUNDS
-		if (user_value < 0) {
-			graceful_exit("Mass must be non-negative!", INVALID_INPUT);
-		}
+		validate_input(user_value, MASS, METRIC);
 		cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
 	} else if (selected_measurement_type == MASS && selected_unit_type == IMPERIAL) {
-		if (user_value < 0) {
-			graceful_exit("Mass must be non-negative!", INVALID_INPUT);
-		}
+		validate_input(user_value, MASS, IMPERIAL);
 		cout << user_value << " pound(s) is " << tograms(user_value) << " gram(s)" << endl; //POUNDS to GRAMS
 	}
 
@@ -172,25 +162,41 @@ double tograms(double pounds) {
 	return pounds * 453.592;
 }
 
-bool check_double_overflow(double input) {
-	if (input > DBL_MAX) { return true; }
-	return false;
-}
+//This code isn't able to be used for input validation because of how stod works, but it's a good proof of concept and reference for later if eventually using try/catch
 
-bool check_double_underflow(double input) {
-	if (input < DBL_MIN) { return true; }
-	return false;
-}
+//bool check_double_overflow(double input) {
+//	if (input > DBL_MAX) { return true; }
+//	return false;
+//}
+//
+//bool check_double_underflow(double input) {
+//	if (input < DBL_MIN) { return true; }
+//	return false;
+//}
+//
+//bool check_double_wraparound(double input) {
+//	if (check_double_overflow(input) || check_double_underflow(input)) {
+//		return true;
+//	}
+//	return false;
+//}
+//
+//void catch_double_wraparound(double input) {
+//	if (check_double_wraparound(input)) {
+//		graceful_exit("Wraparound detected! (overflow / underflow) Please enter a value that's closer to 0", WRAPAROUND);
+//	}
+//}
 
-bool check_double_wraparound(double input) {
-	if (check_double_overflow(input) || check_double_underflow(input)) {
-		return true;
+void validate_input(double value, enum measurement_category category, enum unit_type unit) {
+	if (category == DISTANCE || category == MASS) {
+		if (value < 0) graceful_exit("Value must be non-negative!", INVALID_INPUT);
 	}
-	return false;
-}
-
-void catch_double_wraparound(double input) {
-	if (check_double_wraparound(input)) {
-		graceful_exit("Wraparound detected! (overflow / underflow) Please enter a value that's closer to 0", WRAPAROUND);
+	else if (category == TEMPERATURE) {
+		if (unit == METRIC && value < -273.15) {
+			graceful_exit("Value cannot be less than absolute zero! (-273.15C)", INVALID_INPUT);
+		}
+		else if (unit == IMPERIAL && value < toF(-273.15)) {
+			graceful_exit("Value cannot be less than absolute zero! (-459.67F)", INVALID_INPUT);
+		}
 	}
 }
