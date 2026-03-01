@@ -90,12 +90,20 @@ int main() {
 
 	//MVP Task 3
 	newline(1);
+	double user_value;
 	cout << "Enter the NUMERICAL value to be converted: ";
 	getline(cin, temp);
-	double user_value = stod(temp); //stod already detects wraparound and non-numerical values, but does not handle/catch them (program just crashes).
-									//The max/min size of a double is astronomically high though (1 followed by 309 zeros) and is unlikely to be reached.
-									//Might be able to fix the crashing with the try/catch feature
-
+	//try/catch used to validate input and insure a graceful exit if non numerical character is entered.
+	try {
+		user_value = stod(temp);
+	}
+	catch (std::exception h) {
+		std::cout << "Invalid input! Please enter a real number.";
+			return 1;
+	}
+	//The max/min size of a double is astronomically high though (1 followed by 309 zeros) and is unlikely to be reached.
+	
+	
 	newline(1);
 
 	//The main "algorithm"
