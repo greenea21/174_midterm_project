@@ -1,8 +1,6 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
-#include <algorithm>
-#include <map>
 
 using namespace std;
 
@@ -14,10 +12,6 @@ double toF(double celsius);
 double toC(double fahrenheit);
 double topounds(double grams);
 double tograms(double pounds);
-//bool check_double_overflow(double input);
-//bool check_double_underflow(double input);
-//bool check_double_wraparound(double input);
-//void catch_double_wraparound(double input);
 void validate_input(double value, enum measurement_category category, enum unit_type unit);
 
 //Using enums to avoid "magic numbers" (assigns a keyword to a value so programmers know what the number means)
@@ -34,15 +28,12 @@ enum unit_type {
 };
 
 enum error_type {
-	INVALID_INPUT = -1,
-	O_FLOW = -2,
-	U_FLOW = -3,
-	WRAPAROUND = -4
+	INVALID_INPUT = -1
 };
 
 int main() {
 	string temp;
-	cout << setprecision(16); //NASA uses no more than 16 decimal places so this should be plenty accurate
+	cout << setprecision(16);
 
 	//MVP Task 1
 	cout << "Select your measurement type" << endl;
@@ -51,10 +42,10 @@ int main() {
 	cout << "[D]istance, [T]emperature, or [M]ass" << endl;
 
 	getline(cin, temp);
-	char input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word WILL still work
+	char input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word will still work
 
-	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "var = 0" would
-	switch (input) {
+	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "= 0;" would
+	switch (input) { //Switch is just a cleaner alternative to chaining if/if else statements
 		case 'd':
 			selected_measurement_type = DISTANCE;
 			break;
@@ -93,16 +84,14 @@ int main() {
 	double user_value;
 	cout << "Enter the NUMERICAL value to be converted: ";
 	getline(cin, temp);
-	//try/catch used to validate input and insure a graceful exit if non numerical character is entered.
+
+	//Try/catch used to validate input and ensure a graceful exit if non numerical character is entered.
 	try {
 		user_value = stod(temp);
 	}
 	catch (std::exception h) {
-		std::cout << "Invalid input! Please enter a real number.";
-			return 1;
+		graceful_exit("Invalid input! Please enter a real number.", INVALID_INPUT);
 	}
-	//The max/min size of a double is astronomically high though (1 followed by 309 zeros) and is unlikely to be reached.
-	
 	
 	newline(1);
 
@@ -169,31 +158,6 @@ double topounds(double grams) {
 double tograms(double pounds) {
 	return pounds * 453.592;
 }
-
-//This code isn't able to be used for input validation because of how stod works, but it's a good proof of concept and reference for later if eventually using try/catch
-
-//bool check_double_overflow(double input) {
-//	if (input > DBL_MAX) { return true; }
-//	return false;
-//}
-//
-//bool check_double_underflow(double input) {
-//	if (input < DBL_MIN) { return true; }
-//	return false;
-//}
-//
-//bool check_double_wraparound(double input) {
-//	if (check_double_overflow(input) || check_double_underflow(input)) {
-//		return true;
-//	}
-//	return false;
-//}
-//
-//void catch_double_wraparound(double input) {
-//	if (check_double_wraparound(input)) {
-//		graceful_exit("Wraparound detected! (overflow / underflow) Please enter a value that's closer to 0", WRAPAROUND);
-//	}
-//}
 
 void validate_input(double value, enum measurement_category category, enum unit_type unit) {
 	if (category == DISTANCE || category == MASS) {
