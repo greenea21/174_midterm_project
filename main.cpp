@@ -12,6 +12,7 @@ double toF(double celsius);
 double toC(double fahrenheit);
 double topounds(double grams);
 double tograms(double pounds);
+double kilo_convert(double value);
 void validate_input(double value, enum measurement_category category, enum unit_type unit);
 
 //Using enums to avoid "magic numbers" (assigns a keyword to a value so programmers know what the number means)
@@ -98,11 +99,23 @@ int main() {
 	//The main "algorithm"
 	if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) { //METERS to FEET
 		validate_input(user_value, DISTANCE, METRIC);
-		cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
+		// These if else statments are for strech goal 2. 
+		if (user_value >= 1000) {
+			cout << kilo_convert(user_value) << " km is " << tofeet(user_value) << " feet" << endl;
+		}
+		else {
+			cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
+		}
 	}
 	else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) { //FEET to METERS
 		validate_input(user_value, DISTANCE, IMPERIAL);
-		cout << user_value << " feet is " << tometers(user_value) << " meter(s)" << endl;
+		double meters = tometers(user_value);
+		if (meters >= 1000) {
+			cout << user_value << " feet is " << kilo_convert(meters) << " km" << endl;
+		}
+		else {
+			cout << user_value << " feet is " << meters << " meter(s)" << endl;
+		}
 	}
 	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) { //CELSIUS to FAHRENHEIT
 		validate_input(user_value, TEMPERATURE, METRIC);
@@ -114,10 +127,22 @@ int main() {
 	}
 	else if (selected_measurement_type == MASS && selected_unit_type == METRIC) { //GRAMS to POUNDS
 		validate_input(user_value, MASS, METRIC);
-		cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
+		if (user_value >= 1000) {
+			cout << kilo_convert(user_value) << " kg is " << topounds(user_value) << " pound(s)" << endl;
+		}
+		else {
+			cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
+		}
 	} else if (selected_measurement_type == MASS && selected_unit_type == IMPERIAL) {
 		validate_input(user_value, MASS, IMPERIAL);
-		cout << user_value << " pound(s) is " << tograms(user_value) << " gram(s)" << endl; //POUNDS to GRAMS
+		double grams = tograms(user_value);
+
+		if (grams >= 1000) {
+			cout << user_value << " pound(s) is " << kilo_convert(grams) << " kg" << endl;
+		}
+		else {
+			cout << user_value << " pound(s) is " << grams << " gram(s)" << endl;
+		}
 	}
 
 	return 0;
@@ -157,6 +182,16 @@ double topounds(double grams) {
 
 double tograms(double pounds) {
 	return pounds * 453.592;
+}
+
+double kilo_convert(double value)
+{
+	if (value >= 1000)
+	{
+		return value / 1000;
+	}
+
+	return value;
 }
 
 void validate_input(double value, enum measurement_category category, enum unit_type unit) {
