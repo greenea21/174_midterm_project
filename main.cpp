@@ -145,6 +145,32 @@ int main() {
 		}
 	}
 
+	
+	//convert mass to weight values
+	if (selected_measurement_type == MASS) {
+		cout << "Would you like to see the weight values of your measurement? (y/n) ";
+		getline(cin, temp);
+		char yn = tolower(temp[0]);
+		if (yn == 'y' && selected_unit_type == METRIC) {
+			double earth_N = (user_value / 1000) * 9.81;
+			double moon_N = (user_value / 1000) * 1.62;
+			double mars_N = (user_value / 1000) * 3.71;
+			double jupiter_N = (user_value / 1000) * 24.79;
+			cout << "Earth: " << earth_N << " N " << "Moon: " << moon_N << " N " << "Mars: " << mars_N << " N " << "Jupiter: " << jupiter_N << endl;
+		}
+		else if (yn == 'y' && selected_unit_type == IMPERIAL) {
+			double earth_N = (tograms(user_value) / 1000) * 9.81;
+			double moon_N = (tograms(user_value) / 1000) * 1.62;
+			double mars_N = (tograms(user_value) / 1000) * 3.71;
+			double jupiter_N = (tograms(user_value) / 1000) * 24.79;
+			cout << "Earth: " << earth_N << " N\t" << "Moon: " << moon_N << " N\t" << "Mars: " << mars_N << " N\t" << "Jupiter: " << jupiter_N << endl;
+		}
+		else if (yn != 'n') {
+			cout << "Invalid input! Please respond y for yes or n for no.";
+			return 2;
+		}
+	}
+	
 	return 0;
 }
 
