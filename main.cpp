@@ -4,6 +4,10 @@
 
 using namespace std;
 
+bool continue_program = true;
+bool retry_try_again = true;
+string temp;
+bool user_try_again;
 void graceful_exit(string message, int exit_code);
 void newline(unsigned int numlines);
 double tofeet(double meters);
@@ -14,6 +18,7 @@ double topounds(double grams);
 double tograms(double pounds);
 double kilo_convert(double value);
 void validate_input(double value, enum measurement_category category, enum unit_type unit);
+void prompt_user_try_again();
 
 //Using enums to avoid "magic numbers" (assigns a keyword to a value so programmers know what the number means)
 //Ex. Can just type DISTANCE instead of 0 for clarity
@@ -33,20 +38,24 @@ enum error_type {
 };
 
 int main() {
-	string temp;
+	char input;
+	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "= 0;" would
+	unsigned short selected_unit_type{};
+	double user_value;
+
 	cout << setprecision(16);
 
-	//MVP Task 1
-	cout << "Select your measurement type" << endl;
-	cout << "(Type the associated letter and hit enter)" << endl;
-	newline(1);
-	cout << "[D]istance, [T]emperature, or [M]ass" << endl;
+	while (continue_program) {
+		//MVP Task 1
+		cout << "Select your measurement type" << endl;
+		cout << "(Type the associated letter and hit enter)" << endl;
+		newline(1);
+		cout << "[D]istance, [T]emperature, or [M]ass" << endl;
 
-	getline(cin, temp);
-	char input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word will still work
+		getline(cin, temp);
+		input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word will still work
 
-	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "= 0;" would
-	switch (input) { //Switch is just a cleaner alternative to chaining if/if else statements
+		switch (input) { //Switch is just a cleaner alternative to chaining if/if else statements
 		case 'd':
 			selected_measurement_type = DISTANCE;
 			break;
@@ -58,18 +67,17 @@ int main() {
 			break;
 		default:
 			graceful_exit("Invalid input, enter a valid option! (d, t, or m)", INVALID_INPUT);
-	}
+		}
 
-	//MVP Task 2
-	newline(2);
-	cout << "Is your value metric or imperial?" << endl;
-	cout << "[M]etric or [I]mperial" << endl;
+		//MVP Task 2
+		newline(2);
+		cout << "Is your value metric or imperial?" << endl;
+		cout << "[M]etric or [I]mperial" << endl;
 
-	getline(cin, temp);
-	input = tolower(temp[0]);
+		getline(cin, temp);
+		input = tolower(temp[0]);
 
-	unsigned short selected_unit_type{};
-	switch (input) {
+		switch (input) {
 		case 'm':
 			selected_unit_type = METRIC;
 			break;
@@ -78,100 +86,129 @@ int main() {
 			break;
 		default:
 			graceful_exit("Invalid input, enter a valid option! (m or i)", INVALID_INPUT);
-	}
+		}
 
-	//MVP Task 3
-	newline(1);
-	double user_value;
-	cout << "Enter the NUMERICAL value to be converted: ";
-	getline(cin, temp);
-
-	//Try/catch used to validate input and ensure a graceful exit if non numerical character is entered.
-	try {
-		user_value = stod(temp);
-	}
-	catch (std::exception h) {
-		graceful_exit("Invalid input! Please enter a real number.", INVALID_INPUT);
-	}
-	
-	newline(1);
-
-	//The main "algorithm"
-	if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) { //METERS to FEET
-		validate_input(user_value, DISTANCE, METRIC);
-		// These if else statments are for strech goal 2. 
-		if (user_value >= 1000) {
-			cout << kilo_convert(user_value) << " km is " << tofeet(user_value) << " feet" << endl;
-		}
-		else {
-			cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
-		}
-	}
-	else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) { //FEET to METERS
-		validate_input(user_value, DISTANCE, IMPERIAL);
-		double meters = tometers(user_value);
-		if (meters >= 1000) {
-			cout << user_value << " feet is " << kilo_convert(meters) << " km" << endl;
-		}
-		else {
-			cout << user_value << " feet is " << meters << " meter(s)" << endl;
-		}
-	}
-	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) { //CELSIUS to FAHRENHEIT
-		validate_input(user_value, TEMPERATURE, METRIC);
-		cout << user_value << " celsius is " << toF(user_value) << " fahrenheit" << endl;
-	}
-	else if (selected_measurement_type == TEMPERATURE && selected_unit_type == IMPERIAL) { //FAHRENHEIT TO CELSIUS
-		validate_input(user_value, TEMPERATURE, IMPERIAL);
-		cout << user_value << " fahrenheit is " << toC(user_value) << " celsius" << endl;
-	}
-	else if (selected_measurement_type == MASS && selected_unit_type == METRIC) { //GRAMS to POUNDS
-		validate_input(user_value, MASS, METRIC);
-		if (user_value >= 1000) {
-			cout << kilo_convert(user_value) << " kg is " << topounds(user_value) << " pound(s)" << endl;
-		}
-		else {
-			cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
-		}
-	} else if (selected_measurement_type == MASS && selected_unit_type == IMPERIAL) {
-		validate_input(user_value, MASS, IMPERIAL);
-		double grams = tograms(user_value);
-
-		if (grams >= 1000) {
-			cout << user_value << " pound(s) is " << kilo_convert(grams) << " kg" << endl;
-		}
-		else {
-			cout << user_value << " pound(s) is " << grams << " gram(s)" << endl;
-		}
-	}
-
-	
-	//convert mass to weight values
-	if (selected_measurement_type == MASS) {
-		cout << "Would you like to see the weight values of your measurement? (y/n) ";
+		//MVP Task 3
+		newline(1);
+		cout << "Enter the NUMERICAL value to be converted: ";
 		getline(cin, temp);
-		char yn = tolower(temp[0]);
-		if (yn == 'y' && selected_unit_type == METRIC) {
-			double earth_N = (user_value / 1000) * 9.81;
-			double moon_N = (user_value / 1000) * 1.62;
-			double mars_N = (user_value / 1000) * 3.71;
-			double jupiter_N = (user_value / 1000) * 24.79;
-			cout << "Earth: " << earth_N << " N " << "Moon: " << moon_N << " N " << "Mars: " << mars_N << " N " << "Jupiter: " << jupiter_N << endl;
+
+		//Try/catch used to validate input and ensure a graceful exit if non numerical character is entered.
+		try {
+			user_value = stod(temp);
 		}
-		else if (yn == 'y' && selected_unit_type == IMPERIAL) {
-			double earth_N = (tograms(user_value) / 1000) * 9.81;
-			double moon_N = (tograms(user_value) / 1000) * 1.62;
-			double mars_N = (tograms(user_value) / 1000) * 3.71;
-			double jupiter_N = (tograms(user_value) / 1000) * 24.79;
-			cout << "Earth: " << earth_N << " N\t" << "Moon: " << moon_N << " N\t" << "Mars: " << mars_N << " N\t" << "Jupiter: " << jupiter_N << endl;
+		catch (std::exception h) {
+			graceful_exit("Invalid input! Please enter a real number.", INVALID_INPUT);
 		}
-		else if (yn != 'n') {
-			cout << "Invalid input! Please respond y for yes or n for no.";
-			return 2;
+
+		newline(1);
+
+		//The main "algorithm"
+		if (selected_measurement_type == DISTANCE && selected_unit_type == METRIC) { //METERS to FEET
+			validate_input(user_value, DISTANCE, METRIC);
+			// These if else statments are for strech goal 2. 
+			if (user_value >= 1000) {
+				cout << kilo_convert(user_value) << " km is " << tofeet(user_value) << " feet" << endl;
+			}
+			else {
+				cout << user_value << " meter(s) is " << tofeet(user_value) << " feet" << endl;
+			}
+		}
+		else if (selected_measurement_type == DISTANCE && selected_unit_type == IMPERIAL) { //FEET to METERS
+			validate_input(user_value, DISTANCE, IMPERIAL);
+			double meters = tometers(user_value);
+			if (meters >= 1000) {
+				cout << user_value << " feet is " << kilo_convert(meters) << " km" << endl;
+			}
+			else {
+				cout << user_value << " feet is " << meters << " meter(s)" << endl;
+			}
+		}
+		else if (selected_measurement_type == TEMPERATURE && selected_unit_type == METRIC) { //CELSIUS to FAHRENHEIT
+			validate_input(user_value, TEMPERATURE, METRIC);
+			cout << user_value << " celsius is " << toF(user_value) << " fahrenheit" << endl;
+		}
+		else if (selected_measurement_type == TEMPERATURE && selected_unit_type == IMPERIAL) { //FAHRENHEIT TO CELSIUS
+			validate_input(user_value, TEMPERATURE, IMPERIAL);
+			cout << user_value << " fahrenheit is " << toC(user_value) << " celsius" << endl;
+		}
+		else if (selected_measurement_type == MASS && selected_unit_type == METRIC) { //GRAMS to POUNDS
+			validate_input(user_value, MASS, METRIC);
+			if (user_value >= 1000) {
+				cout << kilo_convert(user_value) << " kg is " << topounds(user_value) << " pound(s)" << endl;
+			}
+			else {
+				cout << user_value << " gram(s) is " << topounds(user_value) << " pound(s)" << endl;
+			}
+		}
+		else if (selected_measurement_type == MASS && selected_unit_type == IMPERIAL) {
+			validate_input(user_value, MASS, IMPERIAL);
+			double grams = tograms(user_value);
+
+			if (grams >= 1000) {
+				cout << user_value << " pound(s) is " << kilo_convert(grams) << " kg" << endl;
+			}
+			else {
+				cout << user_value << " pound(s) is " << grams << " gram(s)" << endl;
+			}
+		}
+
+
+		//convert mass to weight values
+		if (selected_measurement_type == MASS) {
+			cout << "Would you like to see the weight values of your measurement? (y/n) ";
+			getline(cin, temp);
+			char yn = tolower(temp[0]);
+			if (yn == 'y' && selected_unit_type == METRIC) {
+				double earth_N = (user_value / 1000) * 9.81;
+				double moon_N = (user_value / 1000) * 1.62;
+				double mars_N = (user_value / 1000) * 3.71;
+				double jupiter_N = (user_value / 1000) * 24.79;
+				cout << "Earth: " << earth_N << " N " << "Moon: " << moon_N << " N " << "Mars: " << mars_N << " N " << "Jupiter: " << jupiter_N << endl;
+			}
+			else if (yn == 'y' && selected_unit_type == IMPERIAL) {
+				double earth_N = (tograms(user_value) / 1000) * 9.81;
+				double moon_N = (tograms(user_value) / 1000) * 1.62;
+				double mars_N = (tograms(user_value) / 1000) * 3.71;
+				double jupiter_N = (tograms(user_value) / 1000) * 24.79;
+				cout << "Earth: " << earth_N << " N\t" << "Moon: " << moon_N << " N\t" << "Mars: " << mars_N << " N\t" << "Jupiter: " << jupiter_N << endl;
+			}
+			else if (yn != 'n') {
+				cout << "Invalid input! Please respond y for yes or n for no.";
+				return 2;
+			}
+		}
+
+		//Try again?
+		newline(2);
+		prompt_user_try_again();
+		newline(2);
+	}
+
+	return 0;
+}
+
+
+void prompt_user_try_again() {
+	while (retry_try_again) {
+		cout << "Would you like to do another conversion?" << endl;
+		cout << "[Y]es or [N]o?" << endl;
+
+		getline(cin, temp);
+
+		if (tolower(temp[0]) == 'n') {
+			continue_program = false;
+			exit(0);
+		}
+		else if (tolower(temp[0]) != 'y') {
+			cout << "Invalid input! Enter y or n" << endl;
+		}
+		else if(tolower(temp[0]) == 'y') {
+			retry_try_again = false;
 		}
 	}
-	
-	return 0;
+
+	retry_try_again = true;
 }
 
 void graceful_exit(string exit_message, int exit_code) {
