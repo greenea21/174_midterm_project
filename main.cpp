@@ -1,6 +1,20 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include <windows.h> //For text color
+HANDLE hndl = GetStdHandle(STD_OUTPUT_HANDLE);
+
+void set_out_color(int color) {
+	SetConsoleTextAttribute(hndl, color);
+}
+
+enum colors {
+	RED = 12,
+	GREEN = 10,
+	YELLOW = 14,
+	WHITE = 15,
+	dGRAY = 7 //default gray
+};
 
 using namespace std;
 
@@ -38,6 +52,7 @@ enum error_type {
 };
 
 int main() {
+	set_out_color(WHITE);
 	char input;
 	unsigned short selected_measurement_type{}; // {} sets the variable to 0 (otherwise intellisense will complain) the same as "= 0;" would
 	unsigned short selected_unit_type{};
@@ -52,7 +67,9 @@ int main() {
 		newline(1);
 		cout << "[D]istance, [T]emperature, or [M]ass" << endl;
 
+		set_out_color(GREEN);
 		getline(cin, temp);
+		set_out_color(WHITE);
 		input = tolower(temp[0]); //Because we're pulling only the first letter of the input string, typing out the full word will still work
 
 		switch (input) { //Switch is just a cleaner alternative to chaining if/if else statements
@@ -74,7 +91,10 @@ int main() {
 		cout << "Is your value metric or imperial?" << endl;
 		cout << "[M]etric or [I]mperial" << endl;
 
+		set_out_color(GREEN);
 		getline(cin, temp);
+		set_out_color(WHITE);
+
 		input = tolower(temp[0]);
 
 		switch (input) {
@@ -91,7 +111,10 @@ int main() {
 		//MVP Task 3
 		newline(1);
 		cout << "Enter the NUMERICAL value to be converted: ";
+
+		set_out_color(GREEN);
 		getline(cin, temp);
+		set_out_color(WHITE);
 
 		//Try/catch used to validate input and ensure a graceful exit if non numerical character is entered.
 		try {
@@ -156,8 +179,11 @@ int main() {
 
 		//convert mass to weight values
 		if (selected_measurement_type == MASS) {
-			cout << "Would you like to see the weight values of your measurement? (y/n) ";
+			set_out_color(YELLOW);
+			cout << "Would you like to see additional weight values of your measurement? (y/n) ";
+			set_out_color(GREEN);
 			getline(cin, temp);
+			set_out_color(WHITE);
 			char yn = tolower(temp[0]);
 			if (yn == 'y' && selected_unit_type == METRIC) {
 				double earth_N = (user_value / 1000) * 9.81;
@@ -174,8 +200,7 @@ int main() {
 				cout << "Earth: " << earth_N << " N\t" << "Moon: " << moon_N << " N\t" << "Mars: " << mars_N << " N\t" << "Jupiter: " << jupiter_N << endl;
 			}
 			else if (yn != 'n') {
-				cout << "Invalid input! Please respond y for yes or n for no.";
-				return 2;
+				graceful_exit("Invalid input! Please respond y for yes or n for no.", INVALID_INPUT);
 			}
 		}
 
@@ -191,17 +216,23 @@ int main() {
 
 void prompt_user_try_again() {
 	while (retry_try_again) {
+		set_out_color(YELLOW);
 		cout << "Would you like to do another conversion?" << endl;
 		cout << "[Y]es or [N]o?" << endl;
+		set_out_color(WHITE);
 
+		set_out_color(GREEN);
 		getline(cin, temp);
+		set_out_color(WHITE);
 
 		if (tolower(temp[0]) == 'n') {
 			continue_program = false;
 			exit(0);
 		}
 		else if (tolower(temp[0]) != 'y') {
+			set_out_color(RED);
 			cout << "Invalid input! Enter y or n" << endl;
+			set_out_color(WHITE);
 		}
 		else if(tolower(temp[0]) == 'y') {
 			retry_try_again = false;
@@ -213,6 +244,7 @@ void prompt_user_try_again() {
 
 void graceful_exit(string exit_message, int exit_code) {
 	newline(1);
+	set_out_color(RED);
 	cout << exit_message << endl;
 	exit(exit_code);
 }
@@ -259,7 +291,9 @@ double kilo_convert(double value)
 
 void validate_input(double value, enum measurement_category category, enum unit_type unit) {
 	if (category == DISTANCE || category == MASS) {
-		if (value < 0) graceful_exit("Value must be non-negative!", INVALID_INPUT);
+		if (value < 0) {
+			graceful_exit("Value must be non-negative!", INVALID_INPUT);
+		}
 	}
 	else if (category == TEMPERATURE) {
 		if (unit == METRIC && value < -273.15) {
